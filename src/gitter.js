@@ -27,7 +27,7 @@ GitterManager.prototype.subscribe_all = function() {
 };
 
 GitterManager.prototype.subscribe = function(uri, channel_id, user_id) {
-  this.client.rooms.findByUri(uri)
+  return this.client.rooms.findByUri(uri)
     .then(
       room => {
         this.subscribe_handlers(room);
@@ -37,7 +37,11 @@ GitterManager.prototype.subscribe = function(uri, channel_id, user_id) {
           user_id: user_id });
       }, 
       error => {
-        return Promise.reject(`Something has happened: ${error}`);
+        if (error.message.startsWith("404: ")) {
+          return Promise.reject(`Cannot find '${uri}' room. Try another one.`);
+        } else {
+          throw "Unexpected behavior";
+        }
       });
 }
 

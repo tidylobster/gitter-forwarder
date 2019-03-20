@@ -25,8 +25,4 @@ const Subscription = sequelize.define('subscription', {
 });
 
 sequelize.sync();
-
-Subscription.findAll()
-  .then(subs => console.log(`Current subscriptions: ${JSON.stringify(subs, null, 4)}`));
-
 module.exports = Subscription;

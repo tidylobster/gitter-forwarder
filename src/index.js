@@ -41,8 +41,7 @@ app.post('/', urlencodedParser, function (req, res) {
           })
         }
       )
-
-    
+      .catch(error => { res.sendStatus(500)});
   } else if (parts[0] == 'unsubscribe') {
     return res.json({
       "response_type": "in_channel",
