@@ -7,7 +7,7 @@ var GitterManager = function() {
   }
 
   this.client = new Gitter(process.env.GITTER_TOKEN);
-  this.uris   = [];
+  this.uris   = ["tidylobster/community"];
   
   this.client.currentUser()
     .then(user => console.log(`Logged in as @${user.username}`));
@@ -38,9 +38,9 @@ GitterManager.prototype.subscribe = function(uri, channel_id, user_id) {
       }, 
       error => {
         if (error.message.startsWith("404: ")) {
-          return Promise.reject(`Cannot find '${uri}' room. Try another one.`);
+          return Promise.reject(`Cannot find *${uri}* room. Try another one.`);
         } else {
-          throw "Unexpected behavior";
+          throw "Sorry, unexpected behavior ocurred on the server";
         }
       });
 }
@@ -68,6 +68,7 @@ GitterManager.prototype.subscribe_handlers = function(room) {
 function message_handler(room) {
   var room = room;
   return function (event) {
+    console.log(room);
     console.log(`[${room.name}] @${event.model.fromUser.username}: ${event.model.text}`); 
   };
 };

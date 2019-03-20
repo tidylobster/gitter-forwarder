@@ -28,20 +28,13 @@ app.post('/', urlencodedParser, function (req, res) {
         resp => {
           return res.json({
             "response_type": "in_channel",
-            "attachments": [
-              {
-                "text": `Subscribed to ${parts[1]}`
-              }
-            ]
+            "attachments": [{"text": `Subscribed to ${parts[1]}`}]
           })
         },
         error => {
-          return res.json({
-            "text": error.toString()
-          })
+          return res.json({"text": error.toString()})
         }
       )
-      .catch(error => { res.sendStatus(500)});
   } else if (parts[0] == 'unsubscribe') {
     return res.json({
       "response_type": "in_channel",
