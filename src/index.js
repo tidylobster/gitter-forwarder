@@ -1,11 +1,14 @@
 var GitterManager = require('./gitter.js');
-var http = require('http');
+var app = require('express')
+var bodyParser = require('body-parser')
 
-http.createServer(function (req, res) {
-  console.log(req);
-  res.writeHead(200, {'Content-Type': 'text/plain'});
-  res.write('Hello World!');
-  res.end();
-}).listen(80);
+var port = process.env.SLACK_LISTEN_PORT;
+var urlencodedParser = bodyParser.urlencoded({ extended: false })
 
-console.log('Server running at http://localhost:80/');
+app.post('/', urlencodedParser, function (req, res) {
+  if (!req.body) return res.sendStatus(400)
+  console.log(req.body)
+  res.send(`Hello there, ${req.body.user_name}`)
+})
+
+app.listen(port, () => console.log(`Slack client is listening on port ${port}!`))
