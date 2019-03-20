@@ -1,17 +1,13 @@
-var Database = require("./database.js");
+var Subscription = require('./database.js'); 
 var Gitter = require("node-gitter"); 
 
-// Initialize database client; 
-var database = new Database();
-
-var GitterManager = function(){
+var GitterManager = function() {
   if (!process.env.GITTER_TOKEN) {
     throw "GITTER_TOKEN is undefined"; 
   }
 
   this.client = new Gitter(process.env.GITTER_TOKEN);
-  this.db     = new Database();
-  this.uris   = database.getRoomsURIs();
+  this.uris   = [];
   
   this.client.currentUser()
     .then(user => console.log(`Logged in as @${user.username}`));
@@ -30,11 +26,19 @@ GitterManager.prototype.subscribe_all = function() {
   });
 };
 
-GitterManager.prototype.subscribe = function(uri) {
+GitterManager.prototype.subscribe = function(uri, channel_id, user_id) {
   this.client.rooms.findByUri(uri)
-    .then(room => {
-      this.subscribe_handlers(room);
-    }, error => {console.log(error)});
+    .then(
+      room => {
+        this.subscribe_handlers(room);
+        return Subscription.create({ 
+          channel_id: channel_id, 
+          gitter_uri: uri, 
+          user_id: user_id });
+      }, 
+      error => {
+        return Promise.reject(`Something has happened: ${error}`);
+      });
 }
 
 GitterManager.prototype.unsubscribe = function(uri) {
