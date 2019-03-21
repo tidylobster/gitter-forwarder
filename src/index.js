@@ -4,6 +4,7 @@ var bodyParser = require('body-parser');
 
 var app = express();
 var gitter = new GitterManager(); 
+gitter.subscribe_all();
 var port = process.env.SLACK_LISTEN_PORT;
 var urlencodedParser = bodyParser.urlencoded({ extended: false })
 

@@ -1,5 +1,8 @@
 var Subscription = require('./database.js'); 
 var Gitter = require("node-gitter"); 
+const { WebClient } = require('@slack/client');
+
+var slack = new WebClient(process.env.SLACK_TOKEN);
 
 var GitterManager = function() {
   if (!process.env.GITTER_TOKEN) {
@@ -7,7 +10,9 @@ var GitterManager = function() {
   }
 
   this.client = new Gitter(process.env.GITTER_TOKEN);
-  this.uris   = ["tidylobster/community"];
+  this.uris   = [
+    "tidylobster/community", "scala/scala", 
+    "Hydrospheredata/hydro-serving", "Hydrospheredata/mist"];
   
   this.client.currentUser()
     .then(user => console.log(`Logged in as @${user.username}`));
@@ -34,7 +39,8 @@ GitterManager.prototype.subscribe = function(uri, channel_id, user_id) {
         return Subscription.create({ 
           channel_id: channel_id, 
           gitter_uri: uri, 
-          user_id: user_id });
+          user_id: user_id 
+        });
       }, 
       error => {
         if (error.message.startsWith("404: ")) {
@@ -68,8 +74,29 @@ GitterManager.prototype.subscribe_handlers = function(room) {
 function message_handler(room) {
   var room = room;
   return function (event) {
-    console.log(room);
-    console.log(`[${room.name}] @${event.model.fromUser.username}: ${event.model.text}`); 
+    if (event.operation != 'create') return;
+    Subscription.findAll({
+      where: {gitter_uri: room.uri}
+    }).then(rows => {
+      var attachments = [{
+        color: "#168BF2",
+        footer: event.model.fromUser.displayName || event.model.fromUser.username,
+        footer_icon: event.model.fromUser.avatarUrlSmall,
+        title: room.uri,
+        title_link: `https://gitter.im${room.url}`,
+        ts: Math.floor(new Date(event.model.sent).getTime() / 1000),
+      }]
+
+      if (event.model.text.startsWith("[![image.png](")) {
+        attachments[0]["image_url"] = event.model.text.slice(14).split("]")[0].slice(0, -1);; 
+      } else {
+        attachments[0]["text"] = event.model.text;
+      }
+
+      rows.forEach(row => {
+        slack.chat.postMessage({ channel: row.channel_id, attachments: attachments });
+      });
+    })
   };
 };
 
