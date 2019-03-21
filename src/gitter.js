@@ -15,20 +15,11 @@ var GitterManager = function() {
     .then(uris => subscribe_all(uris))
 }; 
 
-GitterManager.prototype.subscribe_all = function(uris) {
-  var promises = [];
-  uris.forEach(uri => promises.push(client.rooms.findByUri(uri)));
-
-  Promise.all(promises).then(results => {
-    results.forEach(room => subscribe_handlers(room));
-  });
-};
-
 GitterManager.prototype.subscribe = function(uri, channel_id, user_id) {
   return client.rooms.findByUri(uri)
     .then(
       room => {
-        subscribe_handlers(room);
+        subscribe_listeners(room);
         return models.Subscription.create({ channel_id: channel_id, gitter_uri: uri, user_id: user_id })
           .then(
             success => { return Promise.resolve(`Subscribed to ${uri}`); },
@@ -86,32 +77,23 @@ GitterManager.prototype.list = function(channel_id) {
   })
 };
 
-function clean_listeners(room) {
-  models.Subscription.findAll({
-    where: { gitter_uri: room.uri }
-  }).then(rows => {
-      if (rows.length == 0) {
-        var resource, resource_name;
-        ["chatMessages", "events", "users"].forEach(event_type => {
-          resource_name = `/api/v1/rooms/${room.id}/${event_type}`;
-          resource = client.faye.subscriptions[resource_name];
-          resource.emitter.removeAllListeners();
-          delete client.faye.subscriptions[resource_name];
-        })
-        console.log(`Removed all listeners from ${room.uri}`);
-      }; 
-    }
-  );
-} 
+function subscribe_all(uris) {
+  var promises = [];
+  uris.forEach(uri => promises.push(client.rooms.findByUri(uri)));
 
-function subscribe_handlers(room) {
-  room.subscribe();
-  room.on("chatMessages", message_handler(room)); 
-  room.on("event", event_handler(room));
-  room.on("users", user_handler(room));
+  Promise.all(promises).then(results => {
+    results.forEach(room => subscribe_listeners(room));
+  });
 }
 
-function message_handler(room) {
+function subscribe_listeners(room) {
+  room.subscribe();
+  room.on("chatMessages", message_listener(room)); 
+  room.on("event", event_listener(room));
+  room.on("users", user_listener(room));
+}
+
+function message_listener(room) {
   var room = room;
   return function (event) {
     if (event.operation != 'create') return;
@@ -138,18 +120,36 @@ function message_handler(room) {
   };
 }
 
-function event_handler(room) {
+function event_listener(room) {
   var room = room;
   return function (event) {
     console.log(`New event ocurred: ${JSON.stringify(event)}`);
   };
 };
 
-function user_handler(room) {
+function user_listener(room) {
   var room = room; 
   return function (event) {
     console.log(`User event ocurred: ${JSON.stringify(event)}`);
   };
 };
+
+function clean_listeners(room) {
+  models.Subscription.findAll({
+    where: { gitter_uri: room.uri }
+  }).then(rows => {
+      if (rows.length == 0) {
+        var resource, resource_name;
+        ["chatMessages", "events", "users"].forEach(event_type => {
+          resource_name = `/api/v1/rooms/${room.id}/${event_type}`;
+          resource = client.faye.subscriptions[resource_name];
+          resource.emitter.removeAllListeners();
+          delete client.faye.subscriptions[resource_name];
+        })
+        console.log(`Removed all listeners from ${room.uri}`);
+      }; 
+    }
+  );
+} 
 
 module.exports = GitterManager;
