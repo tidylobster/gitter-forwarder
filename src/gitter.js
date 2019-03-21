@@ -78,11 +78,14 @@ GitterManager.prototype.list = function(channel_id) {
 };
 
 function subscribe_all(uris) {
-  var promises = [];
-  uris.forEach(uri => promises.push(client.rooms.findByUri(uri)));
-
-  Promise.all(promises).then(results => {
-    results.forEach(room => subscribe_listeners(room));
+  uris.forEach(uri => {
+    client.rooms.findByUri(uri)
+      .then(
+        room => subscribe_listeners(room), 
+        () => models.Subscription.destroy({
+          where: { gitter_uri: room.uri, }
+        })
+      )
   });
 }
 
