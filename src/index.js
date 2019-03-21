@@ -25,6 +25,7 @@ app.post('/', urlencodedParser, function (req, res) {
     })
   }
 
+  // Unhandled rejection Error: Can't set headers after they are sent.
   if (parts.length == 1 && parts[0] == "list") {
     gitter.list(req.body.channel_id)
       .then(response => { return res.json({"text": response}) });
