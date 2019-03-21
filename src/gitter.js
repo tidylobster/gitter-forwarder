@@ -59,7 +59,7 @@ GitterManager.prototype.unsubscribe = function(uri, channel_id) {
   return client.rooms.findByUri(uri)
     .then(
       room => {
-        models.Subscription.destroy({
+        return models.Subscription.destroy({
           where: {
             gitter_uri: room.uri,
             channel_id: channel_id
