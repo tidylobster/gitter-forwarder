@@ -5,27 +5,22 @@ const { WebClient } = require('@slack/client');
 var slack = new WebClient(process.env.SLACK_TOKEN);
 var client = new Gitter(process.env.GITTER_TOKEN);
 
-// Show, which user's credentials are under the hood
+// Show, which user's credentials are used under the hood
 client.currentUser().then(user => console.log(`Logged in as @${user.username}`));
 
 var GitterManager = function() {
-
-  // Subscribe to all available rooms after instance was first initialized
+  // Subscribe to all available rooms after manager was first initialized
   models.sequelize.query('SELECT DISTINCT gitter_uri FROM subscriptions')
-    .then(([results]) => { return results.map(x => x.gitter_uri);})
-    .then(uris => this.subscribe_all(uris))
+    .then(([results]) => results.map(x => x.gitter_uri))
+    .then(uris => subscribe_all(uris))
 }; 
 
 GitterManager.prototype.subscribe_all = function(uris) {
   var promises = [];
-  uris.forEach(uri => {
-    promises.push(client.rooms.findByUri(uri))
-  });
+  uris.forEach(uri => promises.push(client.rooms.findByUri(uri)));
 
   Promise.all(promises).then(results => {
-    results.forEach(room => {
-      this.subscribe_handlers(room);
-    });
+    results.forEach(room => subscribe_handlers(room));
   });
 };
 
@@ -33,7 +28,7 @@ GitterManager.prototype.subscribe = function(uri, channel_id, user_id) {
   return client.rooms.findByUri(uri)
     .then(
       room => {
-        this.subscribe_handlers(room);
+        subscribe_handlers(room);
         return models.Subscription.create({ channel_id: channel_id, gitter_uri: uri, user_id: user_id })
           .then(
             success => { return Promise.resolve(`Subscribed to ${uri}`); },
@@ -69,7 +64,7 @@ GitterManager.prototype.unsubscribe = function(uri, channel_id) {
             if (result == 0) {
               return Promise.reject(`This channel isn't subscribed to ${room.uri}`);
             } else {
-              this.clean_listeners(room);
+              clean_listeners(room);
               return Promise.resolve(`Unsubscribed from ${room.uri}`);
             }
           }
@@ -78,7 +73,20 @@ GitterManager.prototype.unsubscribe = function(uri, channel_id) {
       error => {console.log(error)});
 };
 
-GitterManager.prototype.clean_listeners = function(room) {
+GitterManager.prototype.list = function(channel_id) {
+  return models.Subscription.findAll({
+    where: { channel_id: channel_id }
+  }).then(rows => {
+    if (rows.length != 0) {
+      return Promise.resolve(`This channel is subscribed to the following rooms:\n`+
+        `${rows.map(x => x.gitter_uri).join("\n")}`);
+    } else {
+      return Promise.resolve("This channel is not subscribed to any room"); 
+    }
+  })
+};
+
+function clean_listeners(room) {
   models.Subscription.findAll({
     where: { gitter_uri: room.uri }
   }).then(rows => {
@@ -96,12 +104,12 @@ GitterManager.prototype.clean_listeners = function(room) {
   );
 } 
 
-GitterManager.prototype.subscribe_handlers = function(room) {
+function subscribe_handlers(room) {
   room.subscribe();
   room.on("chatMessages", message_handler(room)); 
   room.on("event", event_handler(room));
   room.on("users", user_handler(room));
-};
+}
 
 function message_handler(room) {
   var room = room;
@@ -125,12 +133,10 @@ function message_handler(room) {
         attachments[0]["text"] = event.model.text;
       }
 
-      rows.forEach(row => {
-        slack.chat.postMessage({ channel: row.channel_id, attachments: attachments });
-      });
+      rows.forEach(row => slack.chat.postMessage({ channel: row.channel_id, attachments: attachments }));
     })
   };
-};
+}
 
 function event_handler(room) {
   var room = room;
@@ -145,6 +151,5 @@ function user_handler(room) {
     console.log(`User event ocurred: ${JSON.stringify(event)}`);
   };
 };
-
 
 module.exports = GitterManager;

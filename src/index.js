@@ -13,14 +13,34 @@ app.post('/', urlencodedParser, function (req, res) {
 
   parts = req.body.text.split(" ")
 
+  if (parts.length < 1) {
+    return res.json({
+      "text": "You have to provide one of the following parameters: [subscribe, unsubscribe, list]"
+    })
+  }
+
+  if (!["subscribe", "unsubscribe", "list"].includes(parts[0])) {
+    return res.json({
+      "text": "Only 3 parameters are available: [subscribe, unsubscribe, list]"
+    })
+  }
+
+  if (parts.length == 1 && parts[0] == "list") {
+    gitter.list(req.body.channel_id)
+      .then(response => {
+          return res.json({"text": response})
+        }
+      )
+  } 
+
   if (parts.length != 2) {
     return res.json({
       "text": "You have to provide exactly 2 parameters: "+
-        "[subscribe, unsubscribe] organization/conversation"
+        "[subscribe, unsubscribe] organization/room"
     })
   } else if (!["subscribe", "unsubscribe"].includes(parts[0])) {
     return res.json({
-      "text": "Only 2 commands are available: [subscribe, unsubscribe]"
+      "text": "Use only one of [subscribe, unsubscribe] parameters with organization/room."
     })
   }
   
