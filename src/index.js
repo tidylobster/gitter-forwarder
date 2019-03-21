@@ -27,7 +27,7 @@ app.post('/', urlencodedParser, function (req, res) {
 
   // Unhandled rejection Error: Can't set headers after they are sent.
   if (parts.length == 1 && parts[0] == "list") {
-    gitter.list(req.body.channel_id)
+    return gitter.list(req.body.channel_id)
       .then(response => { return res.json({"text": response}) });
   } 
 
@@ -43,7 +43,7 @@ app.post('/', urlencodedParser, function (req, res) {
   }
   
   if (parts[0] == 'subscribe') {
-    gitter.subscribe(uri=parts[1], channel_id=req.body.channel_id, user_id=req.body.user_id)
+    return gitter.subscribe(uri=parts[1], channel_id=req.body.channel_id, user_id=req.body.user_id)
       .then(
         success => {
           return res.json({
@@ -58,7 +58,7 @@ app.post('/', urlencodedParser, function (req, res) {
   } 
   
   if (parts[0] == 'unsubscribe') {
-    gitter.unsubscribe(uri=parts[1], channel_id=req.body.channel_id)
+    return gitter.unsubscribe(uri=parts[1], channel_id=req.body.channel_id)
       .then(
         success => {
           return res.json({
