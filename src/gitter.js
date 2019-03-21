@@ -1,27 +1,26 @@
-var Subscription = require('./database.js'); 
+var models = require('./models.js'); 
 var Gitter = require("node-gitter"); 
 const { WebClient } = require('@slack/client');
 
 var slack = new WebClient(process.env.SLACK_TOKEN);
+var client = new Gitter(process.env.GITTER_TOKEN);
+
+// Show, which user's credentials are under the hood
+client.currentUser().then(user => console.log(`Logged in as @${user.username}`));
 
 var GitterManager = function() {
-  if (!process.env.GITTER_TOKEN) {
-    throw "GITTER_TOKEN is undefined"; 
-  }
 
-  this.client = new Gitter(process.env.GITTER_TOKEN);
-  this.uris   = [
-    "tidylobster/community", "scala/scala", 
-    "Hydrospheredata/hydro-serving", "Hydrospheredata/mist"];
-  
-  this.client.currentUser()
-    .then(user => console.log(`Logged in as @${user.username}`));
+  // Subscribe to all available rooms after instance was first initialized
+  models.sequelize.query('SELECT * FROM subscriptions')
+    .then(([results]) => { return results.map(x => x.gitter_uri);})
+    .then(uris => this.subscribe_all(uris));
+
 }; 
 
-GitterManager.prototype.subscribe_all = function() {
+GitterManager.prototype.subscribe_all = function(uris) {
   var promises = [];
-  this.uris.forEach(uri => {
-    promises.push(this.client.rooms.findByUri(uri))
+  uris.forEach(uri => {
+    promises.push(client.rooms.findByUri(uri))
   });
 
   Promise.all(promises).then(results => {
@@ -32,15 +31,20 @@ GitterManager.prototype.subscribe_all = function() {
 };
 
 GitterManager.prototype.subscribe = function(uri, channel_id, user_id) {
-  return this.client.rooms.findByUri(uri)
+  return client.rooms.findByUri(uri)
     .then(
       room => {
         this.subscribe_handlers(room);
-        return Subscription.create({ 
-          channel_id: channel_id, 
-          gitter_uri: uri, 
-          user_id: user_id 
-        });
+        return models.Subscription.create({ channel_id: channel_id, gitter_uri: uri, user_id: user_id })
+          .then(
+            success => { return Promise.resolve(`Subscribed to ${uri}`); },
+            error => {
+              if (error instanceof models.sequelize.Sequelize.UniqueConstraintError ) {
+                return Promise.reject("Already subscribed to this room");
+              };
+              throw "Sorry, unexpected behavior ocurred on the server";
+            }
+          );
       }, 
       error => {
         if (error.message.startsWith("404: ")) {
@@ -48,18 +52,19 @@ GitterManager.prototype.subscribe = function(uri, channel_id, user_id) {
         } else {
           throw "Sorry, unexpected behavior ocurred on the server";
         }
-      });
+      }
+    );
 }
 
 GitterManager.prototype.unsubscribe = function(uri) {
-  this.client.rooms.findByUri(uri)
+  client.rooms.findByUri(uri)
     .then(room => {
       var resource, resource_name;
       ["chatMessages", "events", "users"].forEach(event_type => {
         resource_name = `/api/v1/rooms/${room.id}/${event_type}`;
-        resource = this.client.faye.subscriptions[resource_name];
+        resource = client.faye.subscriptions[resource_name];
         resource.emitter.removeAllListeners();
-        delete this.client.faye.subscriptions[resource_name];
+        delete client.faye.subscriptions[resource_name];
       })
     }, error => {console.log(error)});
 };
@@ -75,11 +80,11 @@ function message_handler(room) {
   var room = room;
   return function (event) {
     if (event.operation != 'create') return;
-    Subscription.findAll({
+    models.Subscription.findAll({
       where: {gitter_uri: room.uri}
     }).then(rows => {
       var attachments = [{
-        color: "#168BF2",
+        color: "#c8c9cc",
         footer: event.model.fromUser.displayName || event.model.fromUser.username,
         footer_icon: event.model.fromUser.avatarUrlSmall,
         title: room.uri,
@@ -103,14 +108,14 @@ function message_handler(room) {
 function event_handler(room) {
   var room = room;
   return function (event) {
-    console.log(`New event ocurred: ${event}`);
+    console.log(`New event ocurred: ${JSON.stringify(event)}`);
   };
 };
 
 function user_handler(room) {
   var room = room; 
   return function (event) {
-    console.log(`User event ocurred: ${event}`);
+    console.log(`User event ocurred: ${JSON.stringify(event)}`);
   };
 };
 

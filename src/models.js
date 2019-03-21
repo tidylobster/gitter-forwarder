@@ -25,4 +25,7 @@ const Subscription = sequelize.define('subscription', {
 });
 
 sequelize.sync();
-module.exports = Subscription;
+module.exports = {
+  sequelize: sequelize,
+  Subscription: Subscription
+};

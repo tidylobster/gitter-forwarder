@@ -4,7 +4,6 @@ var bodyParser = require('body-parser');
 
 var app = express();
 var gitter = new GitterManager(); 
-gitter.subscribe_all();
 var port = process.env.SLACK_LISTEN_PORT;
 var urlencodedParser = bodyParser.urlencoded({ extended: false })
 
@@ -26,14 +25,14 @@ app.post('/', urlencodedParser, function (req, res) {
   } else if (parts[0] == 'subscribe') {
     gitter.subscribe(uri=parts[1], channel_id=req.body.channel_id,user_id=req.body.user_id)
       .then(
-        resp => {
+        success => {
           return res.json({
             "response_type": "in_channel",
-            "attachments": [{"text": `Subscribed to ${parts[1]}`}]
+            "attachments": [{"text": resp}]
           })
         },
-        error => {
-          return res.json({"text": error.toString()})
+        failure => {
+          return res.json({"text": failure})
         }
       )
   } else if (parts[0] == 'unsubscribe') {
