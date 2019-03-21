@@ -70,7 +70,7 @@ GitterManager.prototype.list = function(channel_id) {
   }).then(rows => {
     if (rows.length != 0) {
       return Promise.resolve(`This channel is subscribed to the following rooms:\n`+
-        `${rows.map(x => x.gitter_uri).join("\n")}`);
+        `${rows.map(x => `- <https://gitter.im/${x.gitter_uri}|${x.gitter_uri}>`).join("\n")}`);
     } else {
       return Promise.resolve("This channel is not subscribed to any room"); 
     }
