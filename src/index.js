@@ -27,10 +27,7 @@ app.post('/', urlencodedParser, function (req, res) {
 
   if (parts.length == 1 && parts[0] == "list") {
     gitter.list(req.body.channel_id)
-      .then(response => {
-          return res.json({"text": response})
-        }
-      )
+      .then(response => { return res.json({"text": response}) });
   } 
 
   if (parts.length != 2) {
