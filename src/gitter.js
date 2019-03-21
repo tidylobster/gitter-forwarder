@@ -83,7 +83,7 @@ function subscribe_all(uris) {
       .then(
         room => subscribe_listeners(room), 
         () => models.Subscription.destroy({
-          where: { gitter_uri: room.uri, }
+          where: { gitter_uri: uri, }
         })
       )
   });
