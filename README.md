@@ -5,7 +5,6 @@ This application forwards messages from Gitter rooms to Slack channels in one-wa
 ```bash
 sudo docker run \
   -p 80:80 \
-  -e SLACK_LISTEN_PORT=${SLACK_LISTEN_PORT} \
   -e GITTER_TOKEN=${GITTER_TOKEN} \
   -e SLACK_TOKEN=${SLACK_TOKEN} \
   -e SLACK_CLIENT_ID=${SLACK_CLIENT_ID} \
