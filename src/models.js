@@ -1,31 +1,34 @@
 const Sequelize = require('sequelize');
-
-const p_db = process.env.POSTGRES_DATABASE;
-const p_user = process.env.POSTGRES_USER;
-const p_pass = process.env.POSTGRES_PASS;
-
-const sequelize = new Sequelize(p_db, p_user, p_pass, {
-    host: 'localhost',
-    dialect: 'postgres',
+const log = require('console-log-level')({
+    prefix: () => { return new Date().toISOString() },
+    level: 'info'
 });
 
-sequelize
-  .authenticate()
-  .then(() => {
-    console.log('Database connection has been established successfully.');
-  })
-  .catch(err => {
-    console.error('Unable to connect to the database:', err);
-  });
+const sequelize = new Sequelize(
+    process.env.POSTGRES_DATABASE,
+    process.env.POSTGRES_USER,
+    process.env.POSTGRES_PASS,
+    {
+        host: 'localhost',
+        dialect: 'postgres',
+    }
+);
 
-const Subscription = sequelize.define('subscription', {
-  channel_id: { type: Sequelize.STRING, allowNull: false, unique: "compositeIndex" },
-  gitter_uri: { type: Sequelize.STRING, allowNull: false, unique: "compositeIndex" },
-  user_id: { type: Sequelize.STRING, allowNull: true },
+sequelize.authenticate()
+    .then(() => log.debug('Database connection has been established successfully.'))
+    .catch(failure => log.fatal('Unable to connect to the database: ', failure));
+
+const SubscriptionTable = sequelize.define('subscription', {
+    channel_id: { type: Sequelize.STRING, allowNull: false, unique: "compositeIndex" },
+    gitter_uri: { type: Sequelize.STRING, allowNull: false, unique: "compositeIndex" },
+    user_id: { type: Sequelize.STRING, allowNull: true },
 });
 
-sequelize.sync();
+sequelize.sync()
+    .then(() => log.debug('Database schema was synchronized successfully.'))
+    .catch(failure => log.fatal('Database schema synchronization failed: ', failure));
+
 module.exports = {
-  sequelize: sequelize,
-  Subscription: Subscription
+    sequelize: sequelize,
+    SubscriptionTable: SubscriptionTable
 };
