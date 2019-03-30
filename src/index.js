@@ -4,7 +4,7 @@ const bodyParser = require('body-parser');
 
 const app = express();
 const gitter = new GitterManager();
-const port = process.env.SLACK_LISTEN_PORT;
+const port = 80;
 const urlencodedParser = bodyParser.urlencoded({extended: false});
 
 app.post('/', urlencodedParser, function (req, res) {
