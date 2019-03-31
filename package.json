@@ -1,0 +1,33 @@
+{
+  "name": "gitter-forwarder",
+  "version": "0.0.1",
+  "description": "An application, that forwards messages from Gitter Rooms to Slack channels.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tidylobster/gitter-forwarder.git"
+  },
+  "keywords": [
+    "gitter",
+    "slack",
+    "message-forwarding"
+  ],
+  "author": "Ilnur Garifullin",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tidylobster/gitter-forwarder/issues"
+  },
+  "homepage": "https://github.com/tidylobster/gitter-forwarder#readme",
+  "dependencies": {
+    "@slack/client": "^5.0.0",
+    "express": "^4.16.4",
+    "node-gitter": "^2.1.0",
+    "pg": "^7.9.0",
+    "pg-hstore": "^2.3.2",
+    "sequelize": "^5.2.7",
+    "winston": "^3.2.1"
+  }
+}
