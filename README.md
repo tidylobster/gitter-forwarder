@@ -2,7 +2,14 @@
 
 This application forwards messages from Gitter rooms to Slack channels in one-way fashion. 
 
-This application uses the following environment variables:
+To start an application, use:
+
+```sh
+$ npm install
+$ node src/index.js
+```
+
+This application requires the following environment variables being set.
 
 | Environment Variable | Description |
 | -------------------- | ----------- |
