@@ -12,15 +12,15 @@ const GitterManager = function () {
   // Subscribe to all available rooms after manager was first initialized
   models.sequelize.query('SELECT DISTINCT gitter_uri FROM subscriptions')
       .then(([results]) => results.map(x => x.gitter_uri))
-      .then(uris => subscribe_all(uris))
+      .then(uris => subscribeAll(uris))
 };
 
-GitterManager.prototype.subscribe = function(uri, channel_id, user_id) {
+GitterManager.prototype.subscribe = function(uri, channelId, userId) {
   return client.rooms.findByUri(uri)
     .then(
       room => {
-        subscribe_listeners(room);
-        return models.Subscription.create({ channel_id: channel_id, gitter_uri: uri, user_id: user_id })
+        subscribeAllListeners(room);
+        return models.Subscription.create({ channel_id: channelId, gitter_uri: uri, user_id: userId })
           .then(
             success => { return Promise.resolve(`Subscribed to ${uri}`); },
             error => {
@@ -41,21 +41,21 @@ GitterManager.prototype.subscribe = function(uri, channel_id, user_id) {
     );
 };
 
-GitterManager.prototype.unsubscribe = function(uri, channel_id) {
+GitterManager.prototype.unsubscribe = function(uri, channelId) {
   return client.rooms.findByUri(uri)
     .then(
       room => {
         return models.Subscription.destroy({
           where: {
             gitter_uri: room.uri,
-            channel_id: channel_id
+            channel_id: channelId
           }
         }).then(
           result => {
             if (result === 0) {
               return Promise.reject(`This channel isn't subscribed to ${room.uri}`);
             } else {
-              clean_listeners(room);
+              cleanListeners(room);
               return Promise.resolve(`Unsubscribed from ${room.uri}`);
             }
           }
@@ -64,9 +64,9 @@ GitterManager.prototype.unsubscribe = function(uri, channel_id) {
       error => {console.log(error)});
 };
 
-GitterManager.prototype.list = function(channel_id) {
+GitterManager.prototype.list = function(channelId) {
   return models.Subscription.findAll({
-    where: { channel_id: channel_id }
+    where: { channel_id: channelId }
   }).then(rows => {
     if (rows.length !== 0) {
       return Promise.resolve(`This channel is subscribed to the following rooms:\n`+
@@ -77,11 +77,11 @@ GitterManager.prototype.list = function(channel_id) {
   })
 };
 
-function subscribe_all(uris) {
+function subscribeAll(uris) {
   uris.forEach(uri => {
     client.rooms.findByUri(uri)
       .then(
-        room => subscribe_listeners(room), 
+        room => subscribeAllListeners(room), 
         () => models.Subscription.destroy({
           where: { gitter_uri: uri, }
         })
@@ -89,14 +89,14 @@ function subscribe_all(uris) {
   });
 }
 
-function subscribe_listeners(room) {
+function subscribeAllListeners(room) {
   room.subscribe();
-  room.on("chatMessages", message_listener(room)); 
-  room.on("event", event_listener(room));
-  room.on("users", user_listener(room));
+  room.on("chatMessages", messageListener(room)); 
+  room.on("event", eventListener(room));
+  room.on("users", userListener(room));
 }
 
-function message_listener(room) {
+function messageListener(room) {
   var room = room;
   return function (event) {
     if (event.operation !== 'create') return;
@@ -123,31 +123,31 @@ function message_listener(room) {
   };
 }
 
-function event_listener(room) {
+function eventListener(room) {
   var room = room;
   return function (event) {
     console.log(`New event occurred: ${JSON.stringify(event)}`);
   };
 }
 
-function user_listener(room) {
+function userListener(room) {
   var room = room; 
   return function (event) {
     console.log(`User event occurred: ${JSON.stringify(event)}`);
   };
 }
 
-function clean_listeners(room) {
+function cleanListeners(room) {
   models.Subscription.findAll({
     where: { gitter_uri: room.uri }
   }).then(rows => {
       if (rows.length === 0) {
-        let resource, resource_name;
-        ["chatMessages", "events", "users"].forEach(event_type => {
-          resource_name = `/api/v1/rooms/${room.id}/${event_type}`;
-          resource = client.faye.subscriptions[resource_name];
+        let resource, resourceName;
+        ["chatMessages", "events", "users"].forEach(eventType => {
+          resourceName = `/api/v1/rooms/${room.id}/${eventType}`;
+          resource = client.faye.subscriptions[resourceName];
           resource.emitter.removeAllListeners();
-          delete client.faye.subscriptions[resource_name];
+          delete client.faye.subscriptions[resourceName];
         });
         console.log(`Removed all listeners from ${room.uri}`);
       }
