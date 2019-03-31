@@ -1,4 +1,5 @@
 const GitterManager = require('./gitter.js');
+const logger = require('./log.js');
 const express = require('express');
 const bodyParser = require('body-parser');
 
@@ -54,7 +55,7 @@ app.post('/', urlencodedParser, function (req, res) {
         failure => {
           return res.json({"text": failure})
         }
-      ).catch(error => console.log(error));
+      ).catch(error => logger.error(error));
   }
 
   if (parts[0] === 'unsubscribe') {
@@ -69,8 +70,8 @@ app.post('/', urlencodedParser, function (req, res) {
         failure => {
           return res.json({"text": failure})
         }
-      ).catch(error => console.log(error));
+      ).catch(error => logger.error(error));
   }
 });
 
-app.listen(port, () => console.log(`Slack client is listening on port ${port}!`));
+app.listen(port, () => logger.info(`Slack client is listening on port ${port}!`));

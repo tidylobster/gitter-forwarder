@@ -1,4 +1,5 @@
 const models = require('./models.js');
+const logger = require('./log.js');
 const Gitter = require("node-gitter");
 const { WebClient } = require('@slack/client');
 
@@ -6,7 +7,7 @@ const slack = new WebClient(process.env.SLACK_TOKEN);
 const client = new Gitter(process.env.GITTER_TOKEN);
 
 // Show, which user's credentials are used under the hood
-client.currentUser().then(user => console.log(`Logged in as @${user.username}`));
+client.currentUser().then(user => logger.info(`Logged in as @${user.username}`));
 
 const GitterManager = function () {
   // Subscribe to all available rooms after manager was first initialized
@@ -61,7 +62,7 @@ GitterManager.prototype.unsubscribe = function(uri, channelId) {
           }
         )
       }, 
-      error => {console.log(error)});
+      error => {logger.error(error)});
 };
 
 GitterManager.prototype.list = function(channelId) {
@@ -126,14 +127,14 @@ function messageListener(room) {
 function eventListener(room) {
   var room = room;
   return function (event) {
-    console.log(`New event occurred: ${JSON.stringify(event)}`);
+    logger.info(`New event occurred: ${JSON.stringify(event)}`);
   };
 }
 
 function userListener(room) {
   var room = room; 
   return function (event) {
-    console.log(`User event occurred: ${JSON.stringify(event)}`);
+    logger.info(`User event occurred: ${JSON.stringify(event)}`);
   };
 }
 
@@ -149,7 +150,7 @@ function cleanListeners(room) {
           resource.emitter.removeAllListeners();
           delete client.faye.subscriptions[resourceName];
         });
-        console.log(`Removed all listeners from ${room.uri}`);
+        logger.info(`Removed all listeners from ${room.uri}`);
       }
     }
   );

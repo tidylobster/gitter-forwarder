@@ -1,4 +1,6 @@
 const Sequelize = require('sequelize');
+const logger = require('./log.js');
+const winston = require('winston');
 
 const sequelize = new Sequelize(
     process.env.POSTGRES_DATABASE,
@@ -7,12 +9,13 @@ const sequelize = new Sequelize(
     {
         host: 'localhost',
         dialect: 'postgres',
+        logging: (text) => logger.debug(text),
     }
 );
 
 sequelize.authenticate()
-    .then(() => console.log('Database connection has been established successfully.'))
-    .catch(failure => console.log('Unable to connect to the database: ', failure));
+    .then(() => logger.debug('Database connection has been established successfully.'))
+    .catch(failure => logger.error('Unable to connect to the database: %s', failure));
 
 const SubscriptionTable = sequelize.define('subscription', {
     channel_id: { type: Sequelize.STRING, allowNull: false, unique: "compositeIndex" },
@@ -21,8 +24,8 @@ const SubscriptionTable = sequelize.define('subscription', {
 });
 
 sequelize.sync()
-    .then(() => console.log('Database schema was synchronized successfully.'))
-    .catch(failure => console.log('Database schema synchronization failed: ', failure));
+    .then(() => logger.debug('Database schema was synchronized successfully.'))
+    .catch(failure => logger.error('Database schema synchronization failed: %s', failure));
 
 module.exports = {
     sequelize: sequelize,

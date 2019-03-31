@@ -27,6 +27,7 @@
     "node-gitter": "^2.1.0",
     "pg": "^7.9.0",
     "pg-hstore": "^2.3.2",
-    "sequelize": "^5.2.7"
+    "sequelize": "^5.2.7",
+    "winston": "^3.2.1"
   }
 }
