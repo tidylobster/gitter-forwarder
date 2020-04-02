@@ -112,8 +112,10 @@ function message_listener(room) {
         ts: Math.floor(new Date(event.model.sent).getTime() / 1000),
       }]
 
-      if (event.model.text.startsWith("[![image.png](")) {
-        attachments[0]["image_url"] = event.model.text.slice(14).split("]")[0].slice(0, -1);; 
+      let image_pattern = /^\[\!.+\..+\]\((.+)\)$/g;
+      match = image_pattern.exec(event.model.text);
+      if (match) {
+        attachments[0]["image_url"] = match[1];
       } else {
         attachments[0]["text"] = event.model.text;
       }

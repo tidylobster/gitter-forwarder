@@ -1,0 +1,30 @@
+{
+  "name": "gitter-forwarder",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "http": "^0.0.0",
+    "pg": "^7.9.0",
+    "pg-hstore": "^2.3.2"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.2.3",
+    "@babel/core": "^7.4.0",
+    "@babel/node": "^7.2.2",
+    "@babel/preset-env": "^7.4.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tidylobster/gitter-forwarder.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tidylobster/gitter-forwarder/issues"
+  },
+  "homepage": "https://github.com/tidylobster/gitter-forwarder#readme"
+}
