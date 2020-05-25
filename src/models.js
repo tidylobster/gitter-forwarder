@@ -1,20 +1,17 @@
 const Sequelize = require('sequelize');
 const logger = require('./log.js');
-
+const winston = require('winston');
 
 const sequelize = new Sequelize(
-    process.env.SQLITE_DATABASE,
-    process.env.SQLITE_USER,
-    process.env.SQLITE_PASS,
+    process.env.POSTGRES_DATABASE,
+    process.env.POSTGRES_USER,
+    process.env.POSTGRES_PASS,
     {
-    // sqlite! now!
-    dialect: 'sqlite',
-
-    // the storage engine for sqlite
-    // - default ':memory:'
-    storage: process.env.SQLITE_DATABASE_PATH,
-    logging: (message) => logger.debug(message),
-});
+        host: 'localhost',
+        dialect: 'postgres',
+        logging: (text) => logger.debug(text),
+    }
+);
 
 sequelize.authenticate()
     .then(() => logger.debug('Database connection has been established successfully.'))

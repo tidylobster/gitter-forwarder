@@ -18,8 +18,9 @@ This application requires the following environment variables being set.
 | SLACK_CLIENT_ID      | Your Slack application's client ID. Find more information here: https://api.slack.com/slack-apps | 
 | SLACK_CLIENT_SECRET  | Your Slack application's client secret. | 
 | SLACK_VERIFICATION_TOKEN | Your Slack application's verification token. |
-| SQLITE_DATABASE    | Sqlite database name. |
-| SQLITE_USER        | Sqlite database user. |
-| SQLITE_PASS        | Sqlite database password. | 
-| SQLITE_DATABASE_PATH | Sqlite database path. | 
+| POSTGRES_USER        | Postgres database user. |
+| POSTGRES_PASS        | Postgres database password. | 
+| POSTGRES_HOST        | Postgres database host address. | 
+| POSTGRES_PORT        | Postgres database port. |
+| POSTGRES_DATABASE    | Postgres database name. |
 | NODE_ENV             | Used to affect logging messages. | 

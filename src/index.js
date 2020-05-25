@@ -1,4 +1,3 @@
-const models = require('./models.js');
 const GitterManager = require('./gitter.js');
 const logger = require('./log.js');
 const express = require('express');
