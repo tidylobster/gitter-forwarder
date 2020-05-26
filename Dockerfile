@@ -1,10 +1,15 @@
-FROM node:8.15-alpine
+FROM node:12.16.3-slim
 
-WORKDIR /app
+RUN useradd --create-home --shell /bin/bash app
+USER app
 
-COPY package.json package-lock.json /app/
-RUN npm install 
-COPY src/* /app/
+WORKDIR /home/app
 
-EXPOSE 80
-CMD node index.js
+# Install node dependencies
+COPY package.json package-lock.json /home/app/
+RUN npm install
+
+# Copy source files
+COPY src/ ./src
+
+CMD ["npm", "start"]

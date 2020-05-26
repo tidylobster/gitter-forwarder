@@ -4,6 +4,7 @@
   "description": "An application, that forwards messages from Gitter Rooms to Slack channels.",
   "main": "index.js",
   "scripts": {
+    "start": "node src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
