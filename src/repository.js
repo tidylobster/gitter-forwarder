@@ -12,13 +12,6 @@ const sequelize = new Sequelize(
   }
 );
 
-sequelize.authenticate()
-  .then(() => logger.debug('Database connection has been established successfully.'))
-  .catch(error => {
-    logger.error('Unable to connect to the database: %s', error);
-    process.exit(1);
-  });
-
 const Subscriptions = sequelize.define('subscriptions', {
   channelId: { 
     type: Sequelize.STRING,
@@ -96,11 +89,25 @@ SubscriptionsRepository.prototype.removeByUri = async function(gitterUri) {
   });
 }
 
-sequelize.sync()
-  .then(() => logger.debug('Database schema was synchronized successfully.'))
-  .catch(error => {
+async function initDb() {
+  try {
+    await sequelize.authenticate();
+    logger.info('Database connection has been established successfully.');
+  } catch (error) {
+    logger.error('Unable to connect to the database: %s', error);
+    process.exit(1);
+  }
+  
+  try {
+    await sequelize.sync();
+    logger.info('Database schema was synchronized successfully.');
+  } catch (error) {
     logger.error('Database schema synchronization failed: %s', error);
     process.exit(1);
-  });
+  }
+}
 
-module.exports = SubscriptionsRepository;
+module.exports = {
+  SubscriptionsRepository: SubscriptionsRepository,
+  initDb: initDb,
+};

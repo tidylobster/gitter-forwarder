@@ -1,14 +1,17 @@
 const GitterController = require('./controller.js');
+const { initDb } = require('./repository.js');
 const { logger, logLevel } = require('./log.js');
 const express = require('express');
 const bodyParser = require('body-parser');
 
+// Used for readiness probe
 let isInitialized = false;
 
 const app = express();
-const app_port = process.env.APP_PORT || 80;
-const controller = new GitterController();
 const urlencodedParser = bodyParser.urlencoded({extended: false});
+
+const port = process.env.APP_PORT || 80;
+const controller = new GitterController();
 
 app.post('/', urlencodedParser, async function (req, res) {
   if (!req.body) {
@@ -109,12 +112,13 @@ app.get('/liveness', urlencodedParser, async function(req, res) {
   return res.sendStatus(200);
 });
 
-app.listen(app_port, async () => {
-  await controller.init();
+app.listen(port, async () => {
+  await initDb(); // First, initialize database with the latest schema
+  await controller.init(); // Create listeners for existing subscriptions
   isInitialized = true;
   logger.info(
-    `APP_PORT=${app_port} ` +
+    `APP_PORT=${port} ` +
     `LOG_LEVEL=${logLevel} `
   );
-  logger.info(`Slack client is listening on port ${app_port}!`);
+  logger.info(`Slack client is listening on port ${port}!`);
 });

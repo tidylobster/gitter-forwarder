@@ -1,6 +1,6 @@
 FROM node:12.16.3-slim
 
-RUN useradd --create-home --shell /bin/bash app
+RUN useradd -u 1001 --create-home --shell /bin/bash app
 USER app
 
 WORKDIR /home/app

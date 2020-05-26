@@ -1,7 +1,7 @@
 const { WebClient } = require('@slack/client');
 const Gitter = require("node-gitter");
 const { logger } = require('./log.js');
-const SubscriptionsRepository = require('./repository.js');
+const { SubscriptionsRepository } = require('./repository.js');
 
 const slack = new WebClient(process.env.SLACK_TOKEN);
 const gitter = new Gitter(process.env.GITTER_TOKEN);

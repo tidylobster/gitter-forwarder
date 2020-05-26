@@ -19,8 +19,7 @@ This application requires the following environment variables being set.
 | SLACK_CLIENT_SECRET  | Your Slack application's client secret. | 
 | SLACK_VERIFICATION_TOKEN | Your Slack application's verification token. |
 | POSTGRES_USER        | Postgres database user. |
-| POSTGRES_PASS        | Postgres database password. | 
+| POSTGRES_PASSWORD    | Postgres database password. | 
 | POSTGRES_HOST        | Postgres database host address. | 
 | POSTGRES_PORT        | Postgres database port. |
 | POSTGRES_DATABASE    | Postgres database name. |
-| NODE_ENV             | Used to affect logging messages. | 
