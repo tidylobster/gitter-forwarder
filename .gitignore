@@ -1,6 +1,6 @@
 node_modules/
 .envrc
+.env
 .vscode/
 .idea/
 *.log
-*.db
