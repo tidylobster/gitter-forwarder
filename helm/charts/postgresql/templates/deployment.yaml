@@ -59,6 +59,7 @@ spec:
           volumeMounts:             
             - name: {{ .Values.volume.name }}
               mountPath: {{ .Values.volume.mountPath }} 
+              subPath: postgres
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

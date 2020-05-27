@@ -56,17 +56,19 @@ service:
   port: 8080
 
 ingress:
-  enabled: false
-  annotations: {}
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
+  enabled: true
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    kubernetes.io/ingress.class: nginx
+    kubernetes.io/tls-acme: "true"
   hosts:
-    - host: chart-example.local
-      paths: []
-  tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
+    - host: gitter-forwarder.xxxxxxxxxxxxxxxxxxxxx
+      paths:
+        - /
+  tls:
+   - secretName: gitter-forwarder-hydrosphere-tls
+     hosts:
+       - gitter-forwarder.xxxxxxxxxxxxxxxxxxxxx
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
