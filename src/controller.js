@@ -108,7 +108,7 @@ function buildAttachment(event, room) {
     footer: event.model.fromUser.displayName || event.model.fromUser.username,
     footer_icon: event.model.fromUser.avatarUrlSmall,
     title: room.uri,
-    title_link: `https://gitter.im${room.url}`,
+    title_link: `https://gitter.im${room.url}?at=${event.model.id}`,
     ts: Math.floor(new Date(event.model.sent).getTime() / 1000),
   }
   if (event.model.text.startsWith("[![image.png](")) {
